@@ -1,0 +1,34 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Backend
+/backend/tmp/
+/backend/vendor/
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.production
+/frontend/.env.development
+
+# Docker
+/docker-data/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

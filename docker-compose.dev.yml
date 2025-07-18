@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15
+    container_name: kakeibo-db
+    environment:
+      POSTGRES_DB: kakeibo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: golang:1.23-alpine
+    container_name: kakeibo-api
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=kakeibo
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: ["go", "run", "cmd/api/main.go"]
+
+volumes:
+  postgres_data:

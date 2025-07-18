@@ -34,7 +34,7 @@ graph LR
 - Tailwind CSS for styling
 
 **バックエンド:**
-- Go 1.21+
+- Go 1.23+ (Docker: golang:1.23-alpine)
 - Gin Web Framework for HTTP routing
 - GORM for database ORM
 - golang-migrate for database migrations
