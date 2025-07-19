@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -144,6 +145,9 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
+	// Debug log to see received data
+	fmt.Printf("Received expense request: %+v\n", req)
+
 	if err := h.validator.Struct(req); err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"VALIDATION_ERROR",
@@ -154,8 +158,24 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
+	// Parse date string (try YYYY-MM-DD format first)
+	parsedDate, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		// Try parsing as RFC3339 format
+		parsedDate, err = time.Parse(time.RFC3339, req.Date)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+				"INVALID_DATE",
+				"Invalid date format",
+				"Date must be in YYYY-MM-DD or RFC3339 format",
+				c.Request.URL.Path,
+			))
+			return
+		}
+	}
+
 	// Check if date is in the future
-	if req.Date.After(time.Now()) {
+	if parsedDate.After(time.Now()) {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"FUTURE_DATE",
 			"Expense date cannot be in the future",
@@ -165,13 +185,36 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
+	// Parse UUIDs
+	cardID, err := uuid.Parse(req.CardID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"INVALID_CARD_ID",
+			"Invalid card ID format",
+			err.Error(),
+			c.Request.URL.Path,
+		))
+		return
+	}
+
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID format",
+			err.Error(),
+			c.Request.URL.Path,
+		))
+		return
+	}
+
 	expense := &models.Expense{
 		ID:          uuid.New(),
 		Amount:      req.Amount,
-		Date:        req.Date,
+		Date:        parsedDate,
 		Description: req.Description,
-		CardID:      req.CardID,
-		CategoryID:  req.CategoryID,
+		CardID:      cardID,
+		CategoryID:  categoryID,
 	}
 
 	if err := h.expenseRepo.Create(expense); err != nil {
@@ -254,8 +297,24 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
+	// Parse date string (try YYYY-MM-DD format first)
+	parsedDate, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		// Try parsing as RFC3339 format
+		parsedDate, err = time.Parse(time.RFC3339, req.Date)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+				"INVALID_DATE",
+				"Invalid date format",
+				"Date must be in YYYY-MM-DD or RFC3339 format",
+				c.Request.URL.Path,
+			))
+			return
+		}
+	}
+
 	// Check if date is in the future
-	if req.Date.After(time.Now()) {
+	if parsedDate.After(time.Now()) {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
 			"FUTURE_DATE",
 			"Expense date cannot be in the future",
@@ -265,11 +324,34 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
+	// Parse UUIDs
+	cardID, err := uuid.Parse(req.CardID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"INVALID_CARD_ID",
+			"Invalid card ID format",
+			err.Error(),
+			c.Request.URL.Path,
+		))
+		return
+	}
+
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID format",
+			err.Error(),
+			c.Request.URL.Path,
+		))
+		return
+	}
+
 	expense.Amount = req.Amount
-	expense.Date = req.Date
+	expense.Date = parsedDate
 	expense.Description = req.Description
-	expense.CardID = req.CardID
-	expense.CategoryID = req.CategoryID
+	expense.CardID = cardID
+	expense.CategoryID = categoryID
 
 	if err := h.expenseRepo.Update(expense); err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(

@@ -32,6 +32,9 @@ graph LR
 - Axios for HTTP client
 - Chart.js for data visualization
 - Tailwind CSS for styling
+- Dark/Light theme support
+- Responsive design (Mobile/Tablet/Desktop)
+- Color picker components
 
 **バックエンド:**
 - Go 1.23+ (Docker: golang:1.23-alpine)
@@ -274,3 +277,58 @@ type ErrorResponse struct {
 - 単体テスト: 80%以上
 - 統合テスト: 主要機能の100%
 - E2Eテスト: クリティカルパスの100%
+
+## UI/UX デザイン
+
+### デザインシステム
+
+**カラーパレット:**
+- Primary Color: #8142e7 (アクセントカラー)
+- Primary Color Variants: 50-950 (Tailwind CSS extended palette)
+- Dark Mode: gray-900, gray-800 backgrounds
+- Light Mode: gray-50, white backgrounds
+
+**テーマ機能:**
+- ライト/ダークテーマ切り替え
+- LocalStorage での設定永続化
+- システム設定との連動
+- スムーズなトランジション
+
+**レスポンシブデザイン:**
+- Mobile First approach
+- Breakpoints: sm(640px), md(768px), lg(1024px), xl(1280px)
+- ハンバーガーメニュー (モバイル)
+- グリッドレイアウトの最適化
+
+### コンポーネントデザイン
+
+**共通UI要素:**
+- Card: 角丸、シャドウ、ホバーエフェクト
+- Button: Primary, Secondary, Danger variants
+- Modal: バックドロップ、Escapeキー対応
+- Form: バリデーション表示、ローディング状態
+- Alert: Success, Error, Warning, Info types
+
+**カラーピッカー:**
+- プリセットカラーボタン (10色)
+- カスタムカラーピッカー
+- リアルタイムプレビュー
+
+**ナビゲーション:**
+- アイコン付きメニュー項目
+- アクティブ状態の視覚的フィードバック
+- テーマ切り替えボタン統合
+
+### アクセシビリティ
+
+**WCAG 2.1 AA準拠:**
+- コントラスト比 4.5:1 以上
+- キーボードナビゲーション対応
+- スクリーンリーダー対応
+- フォーカス表示の最適化
+
+**ユーザビリティ:**
+- 直感的なアイコン使用
+- 一貫性のあるインタラクション
+- 適切なローディング表示
+- エラーメッセージの明確化

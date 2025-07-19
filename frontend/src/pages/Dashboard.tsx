@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">ダッシュボード</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">ダッシュボード</h1>
         <Link
           to="/expenses/new"
           className="btn btn-primary"
@@ -100,8 +100,8 @@ const Dashboard: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-600">今月の支出</p>
-              <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalExpenses)}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">今月の支出</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{formatCurrency(totalExpenses)}</p>
             </div>
           </div>
         </div>
@@ -114,8 +114,8 @@ const Dashboard: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-600">登録カード数</p>
-              <p className="text-2xl font-bold text-gray-800">{cardCount}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">登録カード数</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{cardCount}</p>
             </div>
           </div>
         </div>
@@ -128,8 +128,8 @@ const Dashboard: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-600">カテゴリ数</p>
-              <p className="text-2xl font-bold text-gray-800">{categoryCount}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">カテゴリ数</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{categoryCount}</p>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ const Dashboard: React.FC = () => {
       {/* Recent Expenses */}
       <div className="card">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">最近の支出</h2>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">最近の支出</h2>
           <Link
             to="/expenses"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
@@ -148,13 +148,13 @@ const Dashboard: React.FC = () => {
         </div>
         
         {recentExpenses.length === 0 ? (
-          <p className="text-gray-500">支出データがありません</p>
+          <p className="text-gray-500 dark:text-gray-400">支出データがありません</p>
         ) : (
           <div className="space-y-3">
             {recentExpenses.map((expense) => (
               <div
                 key={expense.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
               >
                 <div className="flex items-center">
                   <div
@@ -162,15 +162,15 @@ const Dashboard: React.FC = () => {
                     style={{ backgroundColor: expense.category?.color }}
                   />
                   <div>
-                    <p className="font-medium text-gray-800">{expense.description}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-gray-800 dark:text-white">{expense.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                       {expense.category?.name} • {expense.card?.name}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-800">{formatCurrency(expense.amount)}</p>
-                  <p className="text-sm text-gray-600">{formatDate(expense.date)}</p>
+                  <p className="font-bold text-gray-800 dark:text-white">{formatCurrency(expense.amount)}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{formatDate(expense.date)}</p>
                 </div>
               </div>
             ))}
@@ -191,8 +191,8 @@ const Dashboard: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-bold text-gray-800">支出を登録</h3>
-              <p className="text-gray-600">新しい支出を追加します</p>
+              <h3 className="font-bold text-gray-800 dark:text-white">支出を登録</h3>
+              <p className="text-gray-600 dark:text-gray-300">新しい支出を追加します</p>
             </div>
           </div>
         </Link>
@@ -208,8 +208,8 @@ const Dashboard: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-bold text-gray-800">レポートを見る</h3>
-              <p className="text-gray-600">支出の分析とレポートを確認します</p>
+              <h3 className="font-bold text-gray-800 dark:text-white">レポートを見る</h3>
+              <p className="text-gray-600 dark:text-gray-300">支出の分析とレポートを確認します</p>
             </div>
           </div>
         </Link>

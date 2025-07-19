@@ -20,19 +20,19 @@ type Expense struct {
 }
 
 type CreateExpenseRequest struct {
-	Amount      float64   `json:"amount" validate:"required,gt=0"`
-	Date        time.Time `json:"date" validate:"required"`
-	Description string    `json:"description"`
-	CardID      uuid.UUID `json:"cardId" validate:"required"`
-	CategoryID  uuid.UUID `json:"categoryId" validate:"required"`
+	Amount      float64 `json:"amount" validate:"required,gt=0"`
+	Date        string  `json:"date" validate:"required"`
+	Description string  `json:"description"`
+	CardID      string  `json:"cardId" validate:"required"`
+	CategoryID  string  `json:"categoryId" validate:"required"`
 }
 
 type UpdateExpenseRequest struct {
-	Amount      float64   `json:"amount" validate:"required,gt=0"`
-	Date        time.Time `json:"date" validate:"required"`
-	Description string    `json:"description"`
-	CardID      uuid.UUID `json:"cardId" validate:"required"`
-	CategoryID  uuid.UUID `json:"categoryId" validate:"required"`
+	Amount      float64 `json:"amount" validate:"required,gt=0"`
+	Date        string  `json:"date" validate:"required"`
+	Description string  `json:"description"`
+	CardID      string  `json:"cardId" validate:"required"`
+	CategoryID  string  `json:"categoryId" validate:"required"`
 }
 
 type ExpenseFilters struct {
