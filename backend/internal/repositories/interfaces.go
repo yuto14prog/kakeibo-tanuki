@@ -26,6 +26,7 @@ type CategoryRepository interface {
 type ExpenseRepository interface {
 	Create(expense *models.Expense) error
 	GetByID(id uuid.UUID) (*models.Expense, error)
+	GetByIDWithoutPreload(id uuid.UUID) (*models.Expense, error)
 	GetAll(filters *models.ExpenseFilters) ([]models.Expense, int, error)
 	Update(expense *models.Expense) error
 	Delete(id uuid.UUID) error

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"kakeibo-tanuki/internal/models"
 	"kakeibo-tanuki/internal/repositories"
 
@@ -96,12 +97,24 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	}
 
 	category := &models.Category{
-		ID:    uuid.New(),
-		Name:  req.Name,
-		Color: req.Color,
+		ID:       uuid.New(),
+		Name:     req.Name,
+		Color:    req.Color,
+		IsShared: req.IsShared,
 	}
 
 	if err := h.categoryRepo.Create(category); err != nil {
+		// Check for unique constraint violation (SQLite)
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") || 
+		   strings.Contains(err.Error(), "duplicate key") {
+			c.JSON(http.StatusConflict, models.NewErrorResponse(
+				"DUPLICATE_CATEGORY",
+				"Category with this name already exists",
+				"A category with this name already exists. Please choose a different name.",
+				c.Request.URL.Path,
+			))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"INTERNAL_ERROR",
 			"Failed to create category",
@@ -171,8 +184,20 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 
 	category.Name = req.Name
 	category.Color = req.Color
+	category.IsShared = req.IsShared
 
 	if err := h.categoryRepo.Update(category); err != nil {
+		// Check for unique constraint violation (SQLite)
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") || 
+		   strings.Contains(err.Error(), "duplicate key") {
+			c.JSON(http.StatusConflict, models.NewErrorResponse(
+				"DUPLICATE_CATEGORY",
+				"Category with this name already exists",
+				"A category with this name already exists. Please choose a different name.",
+				c.Request.URL.Path,
+			))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse(
 			"INTERNAL_ERROR",
 			"Failed to update category",

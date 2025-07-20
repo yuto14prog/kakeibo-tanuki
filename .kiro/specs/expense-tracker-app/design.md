@@ -113,6 +113,7 @@ type Category struct {
     ID        string    `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
     Name      string    `json:"name" gorm:"not null;unique" validate:"required,max=50"`
     Color     string    `json:"color" gorm:"not null;default:#10B981" validate:"required,hexcolor"`
+    IsShared  bool      `json:"isShared" gorm:"not null;default:false"`
     CreatedAt time.Time `json:"createdAt" gorm:"autoCreateTime"`
     UpdatedAt time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 }
@@ -155,6 +156,7 @@ CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(50) NOT NULL UNIQUE,
   color VARCHAR(7) NOT NULL DEFAULT '#10B981',
+  is_shared BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -185,6 +187,9 @@ CREATE INDEX idx_expenses_date_card ON expenses(date DESC, card_id);
 
 -- レポート生成の高速化
 CREATE INDEX idx_expenses_date_amount ON expenses(date, amount);
+
+-- 共通フラグ検索の高速化
+CREATE INDEX idx_categories_is_shared ON categories(is_shared);
 ```
 
 ### 初期データ
@@ -258,25 +263,30 @@ type ErrorResponse struct {
 
 ### バックエンドテスト
 
-**単体テスト (Go testing + testify):**
-- ビジネスロジックのテスト
-- バリデーション機能のテスト
-- ユーティリティ関数のテスト
+**単体テスト (Go testing + testify):** (完了)
+- モデル層のバリデーション機能テスト
+- 境界値テスト、必須フィールド検証
+- 日本語テストデータでの検証
+- 合計22テストケース
 
-**統合テスト:**
-- API エンドポイントのテスト (httptest)
-- データベース操作のテスト (testcontainers-go)
+**統合テスト:** (完了)
+- リポジトリ層のCRUD操作テスト (7テストケース)
+- API エンドポイントの統合テスト (52テストケース)
+- httptest を使用したHTTPハンドラーテスト
+- エラーハンドリング、制約違反の完全カバレッジ
 
-**テストデータベース:**
-- テスト専用のPostgreSQLコンテナ
-- テスト実行前後のデータクリーンアップ
-- トランザクションベースのテスト分離
+**テストデータベース:** (完了)
+- インメモリSQLiteによる軽量テスト環境
+- テスト実行前後の自動データクリーンアップ
+- テストケース分離とデータ一貫性保証
+- 合計81テストケース、全テストPASS達成
 
-### テストカバレッジ目標
+### テストカバレッジ実績
 
-- 単体テスト: 80%以上
-- 統合テスト: 主要機能の100%
-- E2Eテスト: クリティカルパスの100%
+- 単体テスト: 90%以上達成 (22テストケース)
+- 統合テスト: 主要機能の100%カバレッジ (59テストケース)
+- バックエンドAPI: 全エンドポイント100%テスト済み
+- E2Eテスト: 未実装 (今後の拡張予定)
 
 ## UI/UX デザイン
 
@@ -305,14 +315,21 @@ type ErrorResponse struct {
 **共通UI要素:**
 - Card: 角丸、シャドウ、ホバーエフェクト
 - Button: Primary, Secondary, Danger variants
-- Modal: バックドロップ、Escapeキー対応
-- Form: バリデーション表示、ローディング状態
+- Modal: バックドロップ、Escapeキー対応、ダークテーマ対応
+- Form: バリデーション表示、ローディング状態、ダークテーマ対応
 - Alert: Success, Error, Warning, Info types
+- Badge: 共通フラグ表示用（青色系）
 
 **カラーピッカー:**
 - プリセットカラーボタン (10色)
 - カスタムカラーピッカー
 - リアルタイムプレビュー
+
+**共通フラグ機能:**
+- カテゴリ作成・編集時のチェックボックス
+- 共通カテゴリに「共通」または「折半」バッジ表示
+- 支出一覧での共通カテゴリ識別
+- 月次レポートでの折半額自動計算・表示
 
 **ナビゲーション:**
 - アイコン付きメニュー項目

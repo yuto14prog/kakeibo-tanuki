@@ -43,7 +43,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="text-center">
         <div className="text-4xl mb-4">{iconMap[type]}</div>
-        <p className="text-gray-700 mb-6">{message}</p>
+        <p className="text-gray-700 dark:text-gray-300 mb-6">{message}</p>
         <div className="flex space-x-3 justify-center">
           <button
             onClick={onClose}

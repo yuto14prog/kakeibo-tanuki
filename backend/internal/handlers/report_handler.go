@@ -42,21 +42,28 @@ func (h *ReportHandler) GetMonthlyReport(c *gin.Context) {
 		filters.Year = year
 	}
 
-	// Parse month parameter (optional)
+	// Parse month parameter (required)
 	monthStr := c.Query("month")
-	if monthStr != "" {
-		month, err := strconv.Atoi(monthStr)
-		if err != nil || month < 1 || month > 12 {
-			c.JSON(http.StatusBadRequest, models.NewErrorResponse(
-				"INVALID_MONTH",
-				"Invalid month parameter",
-				"Month must be a number between 1 and 12",
-				c.Request.URL.Path,
-			))
-			return
-		}
-		filters.Month = &month
+	if monthStr == "" {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"MISSING_MONTH",
+			"Missing month parameter",
+			"Month parameter is required for monthly report",
+			c.Request.URL.Path,
+		))
+		return
 	}
+	month, err := strconv.Atoi(monthStr)
+	if err != nil || month < 1 || month > 12 {
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
+			"INVALID_MONTH",
+			"Invalid month parameter",
+			"Month must be a number between 1 and 12",
+			c.Request.URL.Path,
+		))
+		return
+	}
+	filters.Month = &month
 
 	// Parse card ID parameter (optional)
 	cardIDStr := c.Query("cardId")

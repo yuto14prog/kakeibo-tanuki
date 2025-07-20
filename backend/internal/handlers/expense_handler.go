@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -145,8 +144,6 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
-	// Debug log to see received data
-	fmt.Printf("Received expense request: %+v\n", req)
 
 	if err := h.validator.Struct(req); err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse(
@@ -255,8 +252,8 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
-	// Check if expense exists
-	expense, err := h.expenseRepo.GetByID(id)
+	// Check if expense exists (without preload to avoid relation conflicts during update)
+	expense, err := h.expenseRepo.GetByIDWithoutPreload(id)
 	if err != nil {
 		if err.Error() == "record not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse(

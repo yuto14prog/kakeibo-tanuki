@@ -24,9 +24,22 @@ const api = axios.create({
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    console.error('API Error:', error.config?.url, error.response?.status, error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -122,10 +135,10 @@ export const expenseApi = {
 
 // Report API
 export const reportApi = {
-  async getMonthlyReport(year: number, month?: number, cardId?: string): Promise<MonthlyReport> {
+  async getMonthlyReport(year: number, month: number, cardId?: string): Promise<MonthlyReport> {
     const params = new URLSearchParams();
     params.append('year', year.toString());
-    if (month) params.append('month', month.toString());
+    params.append('month', month.toString());
     if (cardId) params.append('cardId', cardId);
 
     const response = await api.get<ApiResponse<MonthlyReport>>(`/api/reports/monthly?${params}`);

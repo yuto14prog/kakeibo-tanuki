@@ -76,6 +76,11 @@ const ExpenseList: React.FC = () => {
     return category ? category.color : '#10B981';
   };
 
+  const getCategoryIsShared = (categoryId: string) => {
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.isShared : false;
+  };
+
   const getCardColor = (cardId: string) => {
     const card = cards.find(c => c.id === cardId);
     return card ? card.color : '#8142e7';
@@ -299,6 +304,11 @@ const ExpenseList: React.FC = () => {
                             style={{ backgroundColor: getCategoryColor(expense.categoryId) }}
                           />
                           {getCategoryName(expense.categoryId)}
+                          {getCategoryIsShared(expense.categoryId) && (
+                            <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 rounded-full">
+                              共通
+                            </span>
+                          )}
                         </span>
                         <span>📅 {new Date(expense.date).toLocaleDateString('ja-JP')}</span>
                       </div>

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"kakeibo-tanuki/internal/models"
 
 	"github.com/google/uuid"
@@ -22,6 +23,15 @@ func (r *expenseRepository) Create(expense *models.Expense) error {
 func (r *expenseRepository) GetByID(id uuid.UUID) (*models.Expense, error) {
 	var expense models.Expense
 	err := r.db.Preload("Card").Preload("Category").Where("id = ?", id).First(&expense).Error
+	if err != nil {
+		return nil, err
+	}
+	return &expense, nil
+}
+
+func (r *expenseRepository) GetByIDWithoutPreload(id uuid.UUID) (*models.Expense, error) {
+	var expense models.Expense
+	err := r.db.Where("id = ?", id).First(&expense).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,50 +88,82 @@ func (r *expenseRepository) Delete(id uuid.UUID) error {
 func (r *expenseRepository) GetMonthlyReport(filters *models.ReportFilters) (*models.MonthlyReport, error) {
 	var report models.MonthlyReport
 	report.Year = filters.Year
-	if filters.Month != nil {
-		report.Month = *filters.Month
+	
+	// Month is now required
+	if filters.Month == nil {
+		return nil, fmt.Errorf("month parameter is required for monthly report")
 	}
+	report.Month = *filters.Month
 
 	// Base query for the month
-	query := r.db.Model(&models.Expense{}).
-		Where("EXTRACT(YEAR FROM date) = ?", filters.Year)
+	baseQuery := r.db.Where("EXTRACT(YEAR FROM date) = ?", filters.Year)
 	
 	if filters.Month != nil {
-		query = query.Where("EXTRACT(MONTH FROM date) = ?", *filters.Month)
+		baseQuery = baseQuery.Where("EXTRACT(MONTH FROM date) = ?", *filters.Month)
 	}
 
 	if filters.CardID != nil {
-		query = query.Where("card_id = ?", filters.CardID)
+		baseQuery = baseQuery.Where("card_id = ?", filters.CardID)
 	}
 
 	// Get total amount
 	var totalAmount float64
-	err := query.Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount).Error
+	err := baseQuery.Model(&models.Expense{}).Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount).Error
 	if err != nil {
 		return nil, err
 	}
 	report.TotalAmount = totalAmount
 
-	// Get expenses by category
+	// Get expenses by category using separate query
 	var categoryExpenses []models.CategoryExpenseSum
-	err = query.
-		Select("categories.id as category_id, categories.name as category_name, categories.color, COALESCE(SUM(expenses.amount), 0) as total_amount, COUNT(expenses.id) as count").
-		Joins("JOIN categories ON expenses.category_id = categories.id").
-		Group("categories.id, categories.name, categories.color").
-		Scan(&categoryExpenses).Error
+	categoryQuery := r.db.Table("expenses e").
+		Select("c.id as category_id, c.name as category_name, c.color, c.is_shared, COALESCE(SUM(e.amount), 0) as total_amount, COUNT(e.id) as count").
+		Joins("JOIN categories c ON e.category_id = c.id").
+		Where("EXTRACT(YEAR FROM e.date) = ?", filters.Year)
+	
+	if filters.Month != nil {
+		categoryQuery = categoryQuery.Where("EXTRACT(MONTH FROM e.date) = ?", *filters.Month)
+	}
+	if filters.CardID != nil {
+		categoryQuery = categoryQuery.Where("e.card_id = ?", filters.CardID)
+	}
+	
+	err = categoryQuery.Group("c.id, c.name, c.color, c.is_shared").Scan(&categoryExpenses).Error
 	if err != nil {
 		return nil, err
 	}
 	report.ByCategory = categoryExpenses
 
+	// Calculate shared expenses summary
+	var sharedCategories []models.CategoryExpenseSum
+	var totalSharedAmount float64
+	
+	for _, category := range categoryExpenses {
+		if category.IsShared {
+			sharedCategories = append(sharedCategories, category)
+			totalSharedAmount += category.TotalAmount
+		}
+	}
+	
+	report.SharedExpenses = models.SharedExpensesSummary{
+		TotalSharedAmount: totalSharedAmount,
+		SplitAmount:       totalSharedAmount / 2.0,
+		Categories:        sharedCategories,
+	}
+
 	// Get expenses by card (if not filtered by card)
 	if filters.CardID == nil {
 		var cardExpenses []models.CardExpenseSum
-		err = query.
-			Select("cards.id as card_id, cards.name as card_name, cards.color, COALESCE(SUM(expenses.amount), 0) as total_amount, COUNT(expenses.id) as count").
-			Joins("JOIN cards ON expenses.card_id = cards.id").
-			Group("cards.id, cards.name, cards.color").
-			Scan(&cardExpenses).Error
+		cardQuery := r.db.Table("expenses e").
+			Select("cd.id as card_id, cd.name as card_name, cd.color, COALESCE(SUM(e.amount), 0) as total_amount, COUNT(e.id) as count").
+			Joins("JOIN cards cd ON e.card_id = cd.id").
+			Where("EXTRACT(YEAR FROM e.date) = ?", filters.Year)
+		
+		if filters.Month != nil {
+			cardQuery = cardQuery.Where("EXTRACT(MONTH FROM e.date) = ?", *filters.Month)
+		}
+		
+		err = cardQuery.Group("cd.id, cd.name, cd.color").Scan(&cardExpenses).Error
 		if err != nil {
 			return nil, err
 		}
@@ -136,26 +178,31 @@ func (r *expenseRepository) GetYearlyReport(filters *models.ReportFilters) (*mod
 	report.Year = filters.Year
 
 	// Base query for the year
-	query := r.db.Model(&models.Expense{}).
-		Where("EXTRACT(YEAR FROM date) = ?", filters.Year)
+	baseQuery := r.db.Where("EXTRACT(YEAR FROM date) = ?", filters.Year)
 	
 	if filters.CardID != nil {
-		query = query.Where("card_id = ?", filters.CardID)
+		baseQuery = baseQuery.Where("card_id = ?", filters.CardID)
 	}
 
 	// Get total amount for the year
 	var totalAmount float64
-	err := query.Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount).Error
+	err := baseQuery.Model(&models.Expense{}).Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount).Error
 	if err != nil {
 		return nil, err
 	}
 	report.TotalAmount = totalAmount
 
-	// Get monthly breakdown
+	// Get monthly breakdown using separate query
 	var monthlyData []models.MonthlyExpenseSum
-	err = query.
-		Select("EXTRACT(YEAR FROM date) as year, EXTRACT(MONTH FROM date) as month, COALESCE(SUM(amount), 0) as total_amount, COUNT(id) as count").
-		Group("EXTRACT(YEAR FROM date), EXTRACT(MONTH FROM date)").
+	monthlyQuery := r.db.Table("expenses e").
+		Select("EXTRACT(YEAR FROM e.date) as year, EXTRACT(MONTH FROM e.date) as month, COALESCE(SUM(e.amount), 0) as total_amount, COUNT(e.id) as count").
+		Where("EXTRACT(YEAR FROM e.date) = ?", filters.Year)
+	
+	if filters.CardID != nil {
+		monthlyQuery = monthlyQuery.Where("e.card_id = ?", filters.CardID)
+	}
+	
+	err = monthlyQuery.Group("EXTRACT(YEAR FROM e.date), EXTRACT(MONTH FROM e.date)").
 		Order("month").
 		Scan(&monthlyData).Error
 	if err != nil {
@@ -163,13 +210,18 @@ func (r *expenseRepository) GetYearlyReport(filters *models.ReportFilters) (*mod
 	}
 	report.MonthlyData = monthlyData
 
-	// Get expenses by category
+	// Get expenses by category using separate query
 	var categoryExpenses []models.CategoryExpenseSum
-	err = query.
-		Select("categories.id as category_id, categories.name as category_name, categories.color, COALESCE(SUM(expenses.amount), 0) as total_amount, COUNT(expenses.id) as count").
-		Joins("JOIN categories ON expenses.category_id = categories.id").
-		Group("categories.id, categories.name, categories.color").
-		Scan(&categoryExpenses).Error
+	categoryQuery := r.db.Table("expenses e").
+		Select("c.id as category_id, c.name as category_name, c.color, c.is_shared, COALESCE(SUM(e.amount), 0) as total_amount, COUNT(e.id) as count").
+		Joins("JOIN categories c ON e.category_id = c.id").
+		Where("EXTRACT(YEAR FROM e.date) = ?", filters.Year)
+	
+	if filters.CardID != nil {
+		categoryQuery = categoryQuery.Where("e.card_id = ?", filters.CardID)
+	}
+	
+	err = categoryQuery.Group("c.id, c.name, c.color, c.is_shared").Scan(&categoryExpenses).Error
 	if err != nil {
 		return nil, err
 	}
@@ -178,11 +230,12 @@ func (r *expenseRepository) GetYearlyReport(filters *models.ReportFilters) (*mod
 	// Get expenses by card (if not filtered by card)
 	if filters.CardID == nil {
 		var cardExpenses []models.CardExpenseSum
-		err = query.
-			Select("cards.id as card_id, cards.name as card_name, cards.color, COALESCE(SUM(expenses.amount), 0) as total_amount, COUNT(expenses.id) as count").
-			Joins("JOIN cards ON expenses.card_id = cards.id").
-			Group("cards.id, cards.name, cards.color").
-			Scan(&cardExpenses).Error
+		cardQuery := r.db.Table("expenses e").
+			Select("cd.id as card_id, cd.name as card_name, cd.color, COALESCE(SUM(e.amount), 0) as total_amount, COUNT(e.id) as count").
+			Joins("JOIN cards cd ON e.card_id = cd.id").
+			Where("EXTRACT(YEAR FROM e.date) = ?", filters.Year)
+		
+		err = cardQuery.Group("cd.id, cd.name, cd.color").Scan(&cardExpenses).Error
 		if err != nil {
 			return nil, err
 		}

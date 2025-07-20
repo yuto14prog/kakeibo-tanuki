@@ -210,7 +210,7 @@ const CardManagement: React.FC = () => {
                   className={`w-12 h-12 rounded-lg border-2 transition-all duration-200 ${
                     formData.color === color
                       ? 'border-primary-500 scale-110 shadow-lg'
-                      : 'border-gray-300 hover:border-primary-300'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400'
                   }`}
                   style={{ backgroundColor: color }}
                 />
@@ -220,7 +220,7 @@ const CardManagement: React.FC = () => {
               type="color"
               value={formData.color}
               onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              className="w-full h-12 rounded-lg border border-gray-300 cursor-pointer"
+              className="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
             />
           </div>
 

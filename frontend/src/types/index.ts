@@ -10,6 +10,7 @@ export interface Category {
   id: string;
   name: string;
   color: string;
+  isShared: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +36,7 @@ export interface CreateCardRequest {
 export interface CreateCategoryRequest {
   name: string;
   color: string;
+  isShared: boolean;
 }
 
 export interface CreateExpenseRequest {
@@ -58,6 +60,7 @@ export interface MonthlyReport {
   year: number;
   month: number;
   totalAmount: number;
+  sharedExpenses: SharedExpensesSummary;
   byCategory: CategoryExpenseSum[];
   byCard: CardExpenseSum[];
 }
@@ -74,8 +77,15 @@ export interface CategoryExpenseSum {
   categoryId: string;
   categoryName: string;
   color: string;
+  isShared: boolean;
   totalAmount: number;
   count: number;
+}
+
+export interface SharedExpensesSummary {
+  totalSharedAmount: number;
+  splitAmount: number;
+  categories: CategoryExpenseSum[];
 }
 
 export interface CardExpenseSum {

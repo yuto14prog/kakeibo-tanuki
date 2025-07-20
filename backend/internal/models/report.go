@@ -5,11 +5,12 @@ import (
 )
 
 type MonthlyReport struct {
-	Year         int                     `json:"year"`
-	Month        int                     `json:"month"`
-	TotalAmount  float64                 `json:"totalAmount"`
-	ByCategory   []CategoryExpenseSum    `json:"byCategory"`
-	ByCard       []CardExpenseSum        `json:"byCard"`
+	Year            int                     `json:"year"`
+	Month           int                     `json:"month"`
+	TotalAmount     float64                 `json:"totalAmount"`
+	SharedExpenses  SharedExpensesSummary   `json:"sharedExpenses"`
+	ByCategory      []CategoryExpenseSum    `json:"byCategory"`
+	ByCard          []CardExpenseSum        `json:"byCard"`
 }
 
 type YearlyReport struct {
@@ -24,8 +25,15 @@ type CategoryExpenseSum struct {
 	CategoryID   uuid.UUID `json:"categoryId"`
 	CategoryName string    `json:"categoryName"`
 	Color        string    `json:"color"`
+	IsShared     bool      `json:"isShared"`
 	TotalAmount  float64   `json:"totalAmount"`
 	Count        int       `json:"count"`
+}
+
+type SharedExpensesSummary struct {
+	TotalSharedAmount float64                 `json:"totalSharedAmount"`
+	SplitAmount       float64                 `json:"splitAmount"`
+	Categories        []CategoryExpenseSum    `json:"categories"`
 }
 
 type CardExpenseSum struct {
