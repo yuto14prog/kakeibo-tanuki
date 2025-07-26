@@ -69,30 +69,27 @@
   - 月次レポートに共通支出専用セクション
   - ダークテーマ対応強化
 
-### ✅ テスト実装 (2025-07-19完了)
-- **Goバックエンド単体テスト** (完了)
+### ✅ テスト実装 (2025-07-26完了)
+- **Goバックエンド単体・統合テスト** (完了)
   - モデル層バリデーションテスト: Card, Category, Expense
-  - 境界値テスト、必須フィールド検証、型安全性チェック
-  - testifyライブラリ使用、日本語テストデータ対応
-- **リポジトリ層統合テスト** (完了)
-  - CardRepository, CategoryRepository CRUD操作テスト
-  - インメモリSQLite使用、実データベーステスト
-  - 外部キー制約、ユニーク制約、HasExpenses機能テスト
-- **API統合テスト** (完了)
-  - Card, Category, Expense API エンドポイント全体テスト
-  - CRUD操作、バリデーション、エラーハンドリングテスト
-  - 制約違反、存在しないリソースの処理テスト
+  - リポジトリ層CRUD操作テスト、外部キー制約テスト
+  - API統合テスト: CRUD操作、バリデーション、エラーハンドリング
+  - testifyライブラリ使用、インメモリSQLite、日本語テストデータ対応
   - 合計81テストケース、全テストPASS達成
-- **テストファイル構造整理** (完了)
-  - `backend/tests/{unit,integration}` ディレクトリ構造
-  - パッケージ分離とインポートパス最適化
-- **エラーハンドリング修正** (完了)
-  - CategoryHandler: 重複カテゴリ名の適切なエラー処理
-  - ExpenseHandler: Preload競合問題解決
-  - Repository: GetByIDWithoutPreloadメソッド追加
+  - テストファイル構造整理: `backend/tests/{unit,integration}`
+- **フロントエンド包括的単体テスト** (完了)
+  - React コンポーネントテスト: LoadingSpinner, Modal, Header, ConfirmDialog
+  - ページコンポーネントテスト: CardManagement (CRUD操作テスト)
+  - コンテキストテスト: ThemeContext (ダークモード切替テスト)
+  - API サービス層テスト: 全API (cardApi, categoryApi, expenseApi, reportApi, healthApi)
+  - カスタムフックテスト: useApi, useLocalStorage
+  - ユーティリティ関数テスト: format, validation
+  - Jest + React Testing Library + userEvent使用
+  - 合計148テストケース、全テストPASS達成
+  - import.meta.env構文エラー対応、UIアイコンボタン対応済み
+  - テスト環境整備: setupTests.ts, jest.config.js, Chart.jsモック対応
 
 ### 🚧 実装予定
-- **フロントエンド単体テスト** (12.3) - React コンポーネントテスト
 - **フロントエンドE2Eテスト** (12.4) - Playwright テスト
 
 ---
@@ -314,11 +311,12 @@
   - 81テストケース全てPASS達成 (完了)
   - _要件: 全般的な機能要件_
 
-- [ ] 12.3 フロントエンド単体テストの作成
-  - React コンポーネントのテスト
-  - API サービス層のテスト
-  - ユーティリティ関数のテスト
-  - カスタムフックのテスト
+- [x] 12.3 フロントエンド単体テストの作成
+  - React コンポーネントのテスト (完了)
+  - API サービス層のテスト (完了)
+  - ユーティリティ関数のテスト (完了)
+  - カスタムフックのテスト (完了)
+  - 148テストケース全てPASS達成 (完了)
   - _要件: 全般的なUI機能要件_
 
 - [ ] 12.4 フロントエンドE2Eテストの作成
