@@ -51,7 +51,10 @@ graph LR
 **開発・デプロイ:**
 - Vite for frontend build
 - Docker for containerization
-- Environment-based configuration
+- Environment-based configuration (.env.development)
+- Development tools: Makefile, docker-compose.dev.yml
+- Volume optimization: Named volumes for node_modules, Go mod cache
+- Network isolation: Dedicated docker network (kakeibo-network)
 
 ## コンポーネントとインターフェース
 

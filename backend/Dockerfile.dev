@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine
+
+# Install development dependencies
+RUN apk add --no-cache git ca-certificates
+
+# Set working directory
+WORKDIR /app
+
+# Copy go.mod and go.sum for dependency caching
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Expose port
+EXPOSE 8080
+
+# Simple development server with go run
+CMD ["go", "run", "cmd/api/main.go"]

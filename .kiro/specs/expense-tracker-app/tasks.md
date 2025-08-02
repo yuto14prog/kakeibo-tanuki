@@ -102,6 +102,15 @@
   - テストユーティリティ: test-utils.ts共通関数、テストデータ、ヘルパー関数
   - 合計8テストスイート、包括的なユーザーフローカバレッジ達成
 
+### ✅ Docker開発環境最適化 (2025-08-02完了)
+- **開発環境Docker設定の最適化** (完了)
+  - docker-compose.dev.yml: 専用ネットワーク、ヘルスチェック、環境変数統合
+  - 開発用Dockerfile: backend/Dockerfile.dev, frontend/Dockerfile.dev作成
+  - 環境変数管理: .env.development による統合設定
+  - ボリューム最適化: node_modules、Go mod、Viteキャッシュの名前付きボリューム化
+  - 開発コマンド: Makefileによる make dev, logs, clean, restart 等
+  - ビルド最適化: .dockerignore による不要ファイル除外
+
 ### 🚧 実装予定
 
 ---
@@ -344,15 +353,50 @@
   - _要件: 全般的なユーザーフロー要件_
 
 - [ ] 13. Docker環境での統合とデプロイメント設定
-- [ ] 13.1 コンテナ間通信の設定と検証
-  - フロントエンドからバックエンドAPIへの通信設定
-  - バックエンドからデータベースへの接続設定
-  - CORS設定とセキュリティ考慮事項の実装
-  - _要件: 全般的なシステム要件_
+- [x] 13.1 開発環境Docker設定の最適化 (完了 2025-08-02)
+  - docker-compose.dev.yml の改善（ホットリロード対応、専用ネットワーク、ヘルスチェック）
+  - 開発用環境変数の整理と.env.development作成（統合環境変数管理）
+  - コンテナ間ネットワーク設定の検証（kakeibo-network専用ネットワーク）
+  - ボリュームマウント設定の最適化（node_modules除外、Go mod/Viteキャッシュ最適化）
+  - 開発用Dockerfile作成（backend/frontend別Dockerfile.dev）
+  - Makefile開発コマンド整備（dev, logs, clean, restart等）
+  - .dockerignore最適化（ビルド効率向上）
+  - _要件: 全般的な開発効率要件_
 
-- [ ] 13.2 本番環境用Docker設定の最適化
-  - マルチステージビルドによるイメージサイズ最適化
-  - 環境別設定ファイルの分離
-  - ヘルスチェック機能の実装
-  - ログ設定とモニタリング準備
+- [ ] 13.2 本番環境用Docker設定の実装
+  - docker-compose.prod.yml の作成
+  - フロントエンド用マルチステージDockerfileの作成
+  - バックエンド用マルチステージDockerfileの作成
+  - 本番用環境変数設定（.env.production）
   - _要件: 7.5, 7.6_
+
+- [ ] 13.3 コンテナ間通信とセキュリティ設定
+  - CORS設定の本番環境対応（許可ドメインの制限）
+  - APIエンドポイントのHTTPS対応準備
+  - データベース接続のセキュリティ強化（SSL/TLS）
+  - 環境変数による機密情報管理の実装
+  - _要件: 全般的なセキュリティ要件_
+
+- [ ] 13.4 ヘルスチェックとモニタリング機能
+  - バックエンドAPIヘルスチェックエンドポイント実装
+  - データベース接続状態チェック機能
+  - Dockerコンテナヘルスチェック設定
+  - ログ出力設定とログローテーション
+  - _要件: 7.5, 7.6_
+
+- [ ] 13.5 パフォーマンス最適化とイメージサイズ削減
+  - フロントエンドビルド最適化（Tree shaking、Code splitting）
+  - バックエンドバイナリサイズ最適化
+  - Dockerイメージレイヤー最適化
+  - 静的ファイル配信の最適化（Nginx設定等）
+  - _要件: 全般的なパフォーマンス要件_
+
+- [ ] 13.6 CI/CD準備とデプロイメント自動化
+  - GitHub Actions ワークフロー設定（.github/workflows/）
+  - 自動テスト実行設定（単体・統合・E2E）
+  - Docker イメージビルドとGitHub Container Registry (GHCR) へのプッシュ自動化
+  - イメージタグ戦略の実装（latest, semantic versioning, branch-based）
+  - 環境別デプロイメント設定（staging/production）
+  - GHCR認証とパッケージ権限設定
+  - _要件: 全般的な品質保証要件_
+

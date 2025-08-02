@@ -1,0 +1,33 @@
+# Development files
+.env*
+.air.toml
+tmp/
+*.log
+
+# Test files
+tests/
+*_test.go
+test-results/
+
+# Documentation
+README.md
+*.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+kakeibo-api
+main
+*.exe

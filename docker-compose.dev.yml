@@ -1,58 +1,81 @@
-version: '3.8'
+# Docker Compose development configuration
+# This file is optimized for development with hot reload support
 
 services:
   database:
     image: postgres:15
-    container_name: kakeibo-db
+    container_name: kakeibo-db-dev
+    env_file:
+      - .env.development
     environment:
-      POSTGRES_DB: kakeibo
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-kakeibo}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      TZ: Asia/Tokyo
+      PGTZ: Asia/Tokyo
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - kakeibo-network
 
   backend:
-    image: golang:1.23-alpine
-    container_name: kakeibo-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: kakeibo-api-dev
     depends_on:
       database:
         condition: service_healthy
+    env_file:
+      - .env.development
     environment:
       - DB_HOST=database
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=kakeibo
-      - PORT=8080
     ports:
       - "8080:8080"
     volumes:
       - ./backend:/app
-    working_dir: /app
-    command: ["go", "run", "cmd/api/main.go"]
+      - go_mod_cache:/go/pkg/mod
+    stdin_open: true
+    tty: true
+    networks:
+      - kakeibo-network
+    restart: unless-stopped
 
   frontend:
-    image: node:18-alpine
-    container_name: kakeibo-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: kakeibo-frontend-dev
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://localhost:8080
+    env_file:
+      - .env.development
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+      - frontend_node_modules:/app/node_modules
+      - frontend_cache:/app/.vite
+    stdin_open: true
+    tty: true
+    networks:
+      - kakeibo-network
+    restart: unless-stopped
+
+networks:
+  kakeibo-network:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
+  go_mod_cache:
+  frontend_node_modules:
+  frontend_cache:
